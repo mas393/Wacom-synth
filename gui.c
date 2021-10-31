@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include "make_sound.h"
 /*
  * GTK graph sample https://github.com/liberforce/gtk-samples/blob/master/c/gtk3-graph/main.c
  * Use GdkPixbuf new_from_file_at_size to set background of cairo with cairo_set_source_pixbuf in drawing area
@@ -69,8 +70,8 @@ draw_brush (GtkWidget *widget,
   gtk_widget_queue_draw(widget);
 }
 
-static double start_x;
-static double start_y;
+//static double start_x;
+//static double start_y;
 
 static void
 drag_begin (GtkGestureDrag *guesture,
@@ -78,42 +79,19 @@ drag_begin (GtkGestureDrag *guesture,
 	    double y,
 	    GtkWidget *area)
 {
-  start_x = x;
-  start_y = y;
-
+  //start_x = x;
+  //start_y = y;
+  printf("x: %f y: %f\n", x, y);
+  make_sound(200., 200., x, y);
+  /* Need to:
+     translate x and y coordinates to our bounds for freq and whatever the y axis is
+     pass these translated coords into our python functions (or c translations of them)
+   */
+  
   draw_brush (area, x, y);
     
 }
 
-static void
-drag_update (GtkGestureDrag *gesture,
-	     double x,
-	     double y,
-	     GtkWidget *area)
-{
-  draw_brush (area, start_x + x, start_y + y);
-}
-
-static void
-drag_end (GtkGestureDrag *gesture,
-	  double x,
-	  double y,
-	  GtkWidget *area)
-{
-  draw_brush (area, start_x + x, start_y + y);
-}
-
-static void
-pressed (GtkGestureClick *gesture,
-	 int n_press,
-	 double x,
-	 double y,
-	 GtkWidget *area)
-{
-  clear_surface ();
-  gtk_widget_queue_draw (area);
-}
-  
 static void
 close_window(void){
   if (surface)
@@ -132,7 +110,6 @@ activate (GtkApplication *app,
   GtkWidget *frame;
   GtkWidget *drawing_area;
   GtkGesture *drag;
-  GtkGesture *press;
 
   window = gtk_application_window_new (app);
   gtk_window_set_title (GTK_WINDOW (window), "Wacom Synth");
@@ -165,15 +142,6 @@ activate (GtkApplication *app,
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_PRIMARY);
   gtk_widget_add_controller (drawing_area, GTK_EVENT_CONTROLLER (drag));
   g_signal_connect (drag, "drag-begin", G_CALLBACK (drag_begin), drawing_area);
-  //g_signal_connect (drag, "drag-update", G_CALLBACK (drag_update), drawing_area);
-  //g_signal_connect (drag, "drag-end", G_CALLBACK (drag_end), drawing_area);
-
-  press = gtk_gesture_click_new();
-  gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (press), GDK_BUTTON_SECONDARY);
-  gtk_widget_add_controller (drawing_area, GTK_EVENT_CONTROLLER (press));
-
-  g_signal_connect (press, "pressed", G_CALLBACK (pressed), drawing_area);
-
   
   gtk_grid_attach (GTK_GRID (grid), frame, 0, 1, 2, 1);
   gtk_widget_show (window);
