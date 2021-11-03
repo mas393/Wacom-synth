@@ -4,6 +4,11 @@
  * GTK graph sample https://github.com/liberforce/gtk-samples/blob/master/c/gtk3-graph/main.c
  * Use GdkPixbuf new_from_file_at_size to set background of cairo with cairo_set_source_pixbuf in drawing area
  */
+
+//TODO: draw dot prior to make_sound call
+//TODO: send paramater describing button to make_sound
+//TODO: implement wacom support
+
 static cairo_surface_t *surface = NULL;
 
 static void
@@ -81,6 +86,7 @@ drag_begin (GtkGestureDrag *guesture,
 {
   //start_x = x;
   //start_y = y;
+  draw_brush (area, x, y);
   printf("x: %f y: %f\n", x, y);
   make_sound(200., 200., x, y);
   /* Need to:
@@ -88,7 +94,7 @@ drag_begin (GtkGestureDrag *guesture,
      pass these translated coords into our python functions (or c translations of them)
    */
   
-  draw_brush (area, x, y);
+
     
 }
 
@@ -137,7 +143,8 @@ activate (GtkApplication *app,
   gtk_drawing_area_set_draw_func (GTK_DRAWING_AREA (drawing_area), draw_cb, NULL, NULL);
 
   g_signal_connect_after (drawing_area, "resize", G_CALLBACK (resize_cb), NULL);
-  
+
+  //perhaps the button is delayed in appearing because it is a drag gesture
   drag = gtk_gesture_drag_new ();
   gtk_gesture_single_set_button (GTK_GESTURE_SINGLE (drag), GDK_BUTTON_PRIMARY);
   gtk_widget_add_controller (drawing_area, GTK_EVENT_CONTROLLER (drag));

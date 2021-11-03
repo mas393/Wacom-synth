@@ -8,30 +8,75 @@ static snd_pcm_format_t format = SND_PCM_FORMAT_S16;
 static unsigned int rate = 44100;       
 static snd_output_t *output = NULL;
 static int sample_size = 44100 * 2; // 1 second sample at 44100 hz, where each sample takes 2 bytes
+static int maxFreq = 880; // x axis in drawing_sruface translation bounds
+static int minFreq = 110;
+static int steps = 6; // y axis in drawing_surface
+
+static double get_sinusoid(double freq, double phase)
+{
+  return sin(2*M_PI*freq*phase);
+}
+
 
 static void populate_buff(unsigned char *samples, double freq, int partials)
 {
-  int res;
-  double loc;
+  int res, d;
+  double loc, f;
   unsigned char *ptr = samples;
+  
+  double chordstep = 0.25;
+  int chorddegree = (partials+1);
   unsigned int maxval = (1 << 15) - 1;
+  // maxval /= chorddegree;
+
+  // value we need to divide the signal by this partial sum (sum of 1/n**2 for n partials)
+  double partialsum = 1;
+  for (int j = 0; j < partials; j++)
+    {
+      partialsum += 1/pow(2, j);
+      printf("%f\n", freq*pow(2, j+1));
+    }
+  
   for (int i = 0; i < sample_size/2; i++)
     {
-      loc = (double)i/sample_size*2;
-      double a = 2*M_PI*freq*loc;
-
-      res = sin(a)*maxval;
-
-      // partials
-      for (int j = 1; j < partials; j++)
+      res = 0;
+      //chords
+      /*
+      d = 0;
+      f = freq;
+      
+      while (d++ < chorddegree)
 	{
-	  a = a*2;
-	  res += sin(a)*maxval/pow(2, j)/pow(2, j);
+	  //poor way of implementing b/c we need to do all these calculations for each phase of sample
+	  // better to calc the d (degree of chord) frequencies and just look up for each phase of sample
+	  loc = (double)i/sample_size*2;
+	  f = f * (1.0 + (double)chordstep*d);
+	  res = res + get_sinusoid(f, loc)*maxval;
 	}
 
-      // sound shape
-      res *= sin(loc*M_PI)/2;
+      
+      */
 
+
+      // partials
+      /*
+      loc = (double)i/sample_size*2;
+      res = get_sinusoid(freq, loc)*maxval/partialsum;
+      
+      for (int j = 0; j < partials; j++)
+	{
+	  if (freq*pow(2,(j+1)) > rate/2) break;
+							      
+	  res += get_sinusoid(freq*pow(2,(j+1)), loc)*maxval/pow(2, (j+1))/partialsum;
+	}
+      */
+
+      
+      // sound shape
+      //      res *= sin(loc*M_PI)/2;
+      //      res *= exp(-loc);
+
+      
       for (int j = 0; j < 2; j++)
 	{
 	  //singals occupy 2 bytes therefore need to shift for little-endian-ness
@@ -57,9 +102,6 @@ static int write_loop(snd_pcm_t *handle,
 
 }
  
-static int maxFreq = 880;
-static int minFreq = 110;
-static int steps = 6;
 // need to make the translate function depend on the gui buttons (synth modes)
 static void translate_coords(double maxx, double maxy, double x, double y, double *fx, int *fy)
 {
