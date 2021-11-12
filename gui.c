@@ -125,14 +125,13 @@ activate (GtkApplication *app,
   grid = gtk_grid_new ();
   gtk_window_set_child (GTK_WINDOW (window), grid);
   
-
-  button = gtk_button_new_with_label ("button1");
+  //button = gtk_button_new_with_label ("button1");
   //  g_signal_connect(button, "clicked", G_CALLBACK(print_hello), NULL);
-  gtk_grid_attach (GTK_GRID (grid), button, 0, 0, 1, 1);
+  //gtk_grid_attach (GTK_GRID (grid), button, 0, 0, 1, 1);
   
-  button = gtk_button_new_with_label ("button2");
+  //button = gtk_button_new_with_label ("button2");
   //  g_signal_connect(button, "clicked", G_CALLBACK(print_hello), NULL);
-  gtk_grid_attach (GTK_GRID (grid), button, 1, 0, 1, 1);
+  //gtk_grid_attach (GTK_GRID (grid), button, 1, 0, 1, 1);
 
   frame = gtk_frame_new (NULL);
   drawing_area = gtk_drawing_area_new ();
